@@ -1,5 +1,5 @@
 {
-  "name": "carpenstar/bybitapi-central-panel",
+  "name": "carpenstar/bybit-data-farm-example",
   "type": "library",
   "license": "MIT",
   "authors": [
@@ -9,14 +9,12 @@
     }
   ],
   "require": {
-    "carpenstar/bybitapi-sdk-websockets": "dev-master",
+    "carpenstar/bybitapi-sdk-websockets": "3.0.0",
     "mongodb/mongodb": "^1.16",
     "smi2/phpclickhouse": "^1.5",
     "ext-mongodb": "*",
     "ext-json": "*"
   },
-  "minimum-stability": "dev",
-  "prefer-stable": true,
   "autoload": {
     "psr-4": {
       "Source\\": "src/"
