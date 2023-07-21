@@ -1,0 +1,135 @@
+version: '3.1'
+
+networks:
+  collector-cluster-1:
+    driver: bridge
+  collector-data-network:
+    driver: bridge
+
+services:
+  ## Dispatchers
+  dispatcher-kline:
+    container_name: dispatcher-kline
+    restart: always
+    build: .
+    networks:
+      - collector-cluster-1
+      - collector-data-network
+    env_file:
+      - .env
+    depends_on:
+      clickhouse:
+        condition: service_started
+    entrypoint: ["sh", "entrypoint.sh", "dispatcher", "kline"]
+    environment:
+      MONGODB_HOST: mongodb-cluster-1
+
+  dispatcher-orderbook:
+    container_name: dispatcher-orderbook
+    restart: always
+    build: .
+    networks:
+      - collector-cluster-1
+      - collector-data-network
+    env_file:
+      - .env
+    depends_on:
+      clickhouse:
+        condition: service_started
+    entrypoint: ["sh", "entrypoint.sh", "dispatcher", "orderbook"]
+    environment:
+      MONGODB_HOST: mongodb-cluster-1
+
+  dispatcher-tickers:
+    container_name: dispatcher-tickers
+    restart: always
+    build: .
+    networks:
+      - collector-cluster-1
+      - collector-data-network
+    env_file:
+      - .env
+    depends_on:
+      clickhouse:
+        condition: service_started
+    entrypoint: ["sh", "entrypoint.sh", "dispatcher", "tickers"]
+    environment:
+      MONGODB_HOST: mongodb-cluster-1
+
+  ## KLINE Collectors
+  collector-kline:
+    container_name: collector-kline
+    restart: always
+    build: .
+    environment:
+      MONGODB_HOST: mongodb-cluster-1
+      SYMBOL: BTCUSDT,ETHUSDT
+      INTERVAL: 1m
+    depends_on:
+      mongodb-cluster-1:
+        condition: service_started
+    entrypoint: ["sh", "entrypoint.sh", "collector", "kline"]
+    env_file:
+      - .env
+    networks:
+      - collector-cluster-1
+
+  collector-orderbook:
+    container_name: collector-orderbook
+    restart: always
+    build: .
+    environment:
+      MONGODB_HOST: mongodb-cluster-1
+      SYMBOL: BTCUSDT,ETHUSDT
+      ORDERBOOK_DEPTH: 40
+    depends_on:
+      mongodb-cluster-1:
+        condition: service_started
+    entrypoint: ["sh", "entrypoint.sh", "collector", "orderbook"]
+    env_file:
+      - .env
+    networks:
+      - collector-cluster-1
+
+  collector-tickers:
+    restart: always
+    container_name: collector-tickers
+    build: .
+    environment:
+      MONGODB_HOST: mongodb-cluster-1
+      SYMBOL: BTCUSDT,ETHUSDT
+    depends_on:
+      mongodb-cluster-1:
+        condition: service_started
+    entrypoint: ["sh", "entrypoint.sh", "collector", "tickers"]
+    env_file:
+      - .env
+    networks:
+      - collector-cluster-1
+
+
+
+## Mongo DBs
+  mongodb-cluster-1:
+    container_name: mongo-cluster-1
+    image: mongo
+    networks:
+      - collector-cluster-1
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD}
+
+
+
+## Main Database
+  clickhouse:
+    container_name: clickhouse
+    image: clickhouse/clickhouse-server:latest
+    networks:
+      - collector-data-network
+    env_file:
+      - .env
+    ports:
+      - "8123:8123"
