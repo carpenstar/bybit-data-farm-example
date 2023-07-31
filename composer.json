@@ -9,7 +9,7 @@
     }
   ],
   "require": {
-    "carpenstar/bybitapi-sdk-websockets": "3.0.0",
+    "carpenstar/bybitapi-sdk-websockets": "3.0.*",
     "mongodb/mongodb": "^1.16",
     "smi2/phpclickhouse": "^1.5",
     "ext-mongodb": "*",
